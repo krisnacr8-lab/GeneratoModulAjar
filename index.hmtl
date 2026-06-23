@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Rencana Pembelajaran Mendalam (RPM) - Kurikulum Merdeka</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        
+        /* Styles for the generated document to ensure it copies well to Word/Docs */
+        #document-preview-container {
+            font-family: 'Times New Roman', Times, serif; /* Standard academic font */
+            font-size: 11pt;
+            color: #000;
+            background: #fff;
+            line-height: 1.5;
+        }
+        .rpm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .rpm-table th, .rpm-table td {
+            border: 1px solid #000;
+            padding: 8px 12px;
+            vertical-align: top;
+            text-align: justify;
+        }
+        .rpm-table th {
+            background-color: #f3f4f6;
+            text-align: left;
+            font-weight: bold;
+        }
+        .rpm-table ul, .rpm-table ol {
+            margin-top: 0;
+            margin-bottom: 0;
+            padding-left: 20px;
+        }
+        .rpm-table p {
+            margin-top: 0;
+            margin-bottom: 8px;
+        }
+        
+        /* Custom Scrollbar for UI */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+        /* Loader Animation */
+        .loader {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* Toast notification */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 16px;
+            position: fixed;
+            z-index: 50;
+            left: 50%;
+            bottom: 30px;
+            transform: translateX(-50%);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            opacity: 0;
+            transition: opacity 0.3s, bottom 0.3s;
+        }
+        #toast.show {
+            visibility: visible;
+            opacity: 1;
+            bottom: 50px;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col md:flex-row overflow-hidden text-sm">
+
+    <!-- Left Sidebar: Form Input -->
+    <div class="w-full md:w-[40%] h-full bg-white border-r border-gray-200 flex flex-col shadow-sm z-10">
+        <div class="p-6 border-b border-gray-100 bg-white sticky top-0 z-20">
+            <h1 class="text-xl font-bold text-gray-800 leading-tight">Generator RPM AI</h1>
+            <p class="text-xs text-gray-500 mt-1">Rencana Pembelajaran Mendalam - Kurikulum Merdeka 2025</p>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6">
+            <form id="rpmForm" class="space-y-8">
+                <!-- Section 1: Identitas -->
+                <div>
+                    <h2 class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4">1. Identitas & Sekolah</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Nama Guru <span class="text-red-500">*</span></label>
+                            <input type="text" id="namaGuru" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">NIP Guru</label>
+                            <input type="text" id="nipGuru" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Nama Kepala Sekolah <span class="text-red-500">*</span></label>
+                            <input type="text" id="namaKepsek" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">NIP Kepala Sekolah</label>
+                            <input type="text" id="nipKepsek" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-1">Nama Satuan Pendidikan <span class="text-red-500">*</span></label>
+                            <input type="text" id="namaSekolah" required placeholder="Contoh: SMP Negeri 1 Semarapura" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 2: Administrasi Pelajaran -->
+                <div>
+                    <h2 class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4">2. Administrasi Pembelajaran</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Mata Pelajaran <span class="text-red-500">*</span></label>
+                            <input type="text" id="mataPelajaran" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Fase <span class="text-red-500">*</span></label>
+                            <select id="fase" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="">Pilih Fase</option>
+                                <option value="Fondasi (PAUD)">Fondasi (PAUD)</option>
+                                <option value="A (Kelas 1-2 SD)">A (Kelas 1-2 SD)</option>
+                                <option value="B (Kelas 3-4 SD)">B (Kelas 3-4 SD)</option>
+                                <option value="C (Kelas 5-6 SD)">C (Kelas 5-6 SD)</option>
+                                <option value="D (Kelas 7-9 SMP)">D (Kelas 7-9 SMP)</option>
+                                <option value="E (Kelas 10 SMA/SMK)">E (Kelas 10 SMA/SMK)</option>
+                                <option value="F (Kelas 11-12 SMA/SMK)">F (Kelas 11-12 SMA/SMK)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Kelas <span class="text-red-500">*</span></label>
+                            <input type="text" id="kelas" required placeholder="Contoh: VII" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Semester <span class="text-red-500">*</span></label>
+                            <select id="semester" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="Ganjil">Ganjil</option>
+                                <option value="Genap">Genap</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Tahun Pelajaran <span class="text-red-500">*</span></label>
+                            <input type="text" id="tahunPelajaran" required placeholder="Contoh: 2025/2026" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Alokasi Waktu <span class="text-red-500">*</span></label>
+                            <input type="text" id="alokasiWaktu" required placeholder="Contoh: 2 x 40 Menit (1 Pertemuan)" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 3: Substansi Pembelajaran -->
+                <div>
+                    <h2 class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4">3. Substansi Pembelajaran</h2>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Capaian Pembelajaran (CP) <span class="text-red-500">*</span></label>
+                            <textarea id="cp" required rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan narasi CP..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Tujuan Pembelajaran (TP) <span class="text-red-500">*</span></label>
+                            <textarea id="tp" required rows="3" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none" placeholder="Masukkan detail TP (bisa berupa poin-poin)..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Section 4: Desain & Strategi -->
+                <div>
+                    <h2 class="text-sm font-semibold text-blue-600 uppercase tracking-wider mb-4">4. Desain & Strategi</h2>
+                    
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2 font-medium">Dimensi Profil Pelajar Pancasila <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-2 text-xs" id="dimensiProfil">
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Beriman, Bertakwa kepada Tuhan YME, dan Berakhlak Mulia" class="rounded text-blue-600"> <span>Keimanan & Ketakwaan</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Berkebinekaan Global" class="rounded text-blue-600"> <span>Berkebinekaan Global</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Bergotong Royong" class="rounded text-blue-600"> <span>Kolaborasi / Gotong Royong</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Mandiri" class="rounded text-blue-600"> <span>Kemandirian</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Bernalar Kritis" class="rounded text-blue-600"> <span>Penalaran Kritis</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Kreatif" class="rounded text-blue-600"> <span>Kreativitas</span></label>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2 font-medium">Sarana Prasarana (Media/Alat) <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 gap-2 text-xs" id="sarpras">
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Laptop/PC" class="rounded text-blue-600"> <span>Laptop / PC</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Proyektor LCD" class="rounded text-blue-600"> <span>Proyektor LCD</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Gawai/Smartphone" class="rounded text-blue-600"> <span>Gawai/Smartphone</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Akses Internet / WiFi" class="rounded text-blue-600"> <span>Internet/WiFi</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="LKPD" class="rounded text-blue-600"> <span>LKPD</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Buku Teks & Video Youtube" class="rounded text-blue-600"> <span>Buku Teks & Video</span></label>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label class="block text-gray-700 mb-1">Target Peserta Didik <span class="text-red-500">*</span></label>
+                            <select id="targetPeserta" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="Reguler/Tipikal (Tidak ada kesulitan khusus)">Reguler / Tipikal</option>
+                                <option value="Peserta Didik dengan Kesulitan Belajar">Kesulitan Belajar</option>
+                                <option value="Peserta Didik dengan Pencapaian Tinggi (HOTS)">Pencapaian Tinggi</option>
+                                <option value="Campuran (Diferensiasi Penuh)">Campuran (Diferensiasi)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Model Pembelajaran <span class="text-red-500">*</span></label>
+                            <select id="modelPembelajaran" required class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 outline-none">
+                                <option value="Project Based Learning (PjBL)">Project Based Learning (PjBL)</option>
+                                <option value="Problem Based Learning (PBL)">Problem Based Learning (PBL)</option>
+                                <option value="Inquiry Learning">Inquiry Learning</option>
+                                <option value="Discovery Learning">Discovery Learning</option>
+                                <option value="Cooperative Learning">Cooperative Learning</option>
+                                <option value="Contextual Teaching and Learning (CTL)">CTL</option>
+                                <option value="Game Based Learning">Game Based Learning</option>
+                                <option value="Model 5E (Engage, Explore, Explain, Elaborate, Evaluate)">Model 5E</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-gray-700 mb-2 font-medium">Metode Pembelajaran <span class="text-red-500">*</span></label>
+                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-2 text-xs" id="metodePembelajaran">
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Diskusi" class="rounded text-blue-600"> <span>Diskusi</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Tanya Jawab" class="rounded text-blue-600"> <span>Tanya Jawab</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Eksperimen" class="rounded text-blue-600"> <span>Eksperimen</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Demonstrasi" class="rounded text-blue-600"> <span>Demonstrasi</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Studi Kasus" class="rounded text-blue-600"> <span>Studi Kasus</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Role Play" class="rounded text-blue-600"> <span>Role Play</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Mind Mapping" class="rounded text-blue-600"> <span>Mind Mapping</span></label>
+                            <label class="flex items-center space-x-2"><input type="checkbox" value="Ceramah Interaktif" class="rounded text-blue-600"> <span>Ceramah Interaktif</span></label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-gray-100">
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition duration-200 flex justify-center items-center gap-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                        Buat Dokumen RPM AI
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Right Content: Output Preview -->
+    <div class="w-full md:w-[60%] h-full bg-gray-100 flex flex-col">
+        <!-- Action Toolbar -->
+        <div class="h-16 bg-white border-b border-gray-200 flex items-center justify-between px-6 shadow-sm z-10 shrink-0">
+            <h2 class="font-semibold text-gray-700">Pratinjau Dokumen</h2>
+            <div class="flex gap-2">
+                <button onclick="copyToGoogleDocs()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-4 py-2 rounded-md text-xs font-medium transition shadow-sm flex items-center gap-2" id="btnCopy" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    Salin & Buka G-Docs
+                </button>
+                <button onclick="exportToWord()" class="bg-blue-800 hover:bg-blue-900 text-white px-4 py-2 rounded-md text-xs font-medium transition shadow-sm flex items-center gap-2" id="btnWord" disabled>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    Unduh Word (.doc)
+                </button>
+            </div>
+        </div>
+
+        <!-- Document Preview Area -->
+        <div class="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center bg-gray-200">
+            <!-- Empty State / Loader Container -->
+            <div id="statusContainer" class="flex flex-col items-center justify-center text-gray-500 w-full h-full">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mb-4 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                <p>Isi formulir di sebelah kiri dan klik "Buat Dokumen RPM AI".</p>
+                <p class="text-xs mt-2">Pastikan semua kolom bertanda * telah diisi.</p>
+            </div>
+
+            <!-- Loading Spinner -->
+            <div id="loaderContainer" class="hidden flex-col items-center justify-center text-blue-600 w-full h-full">
+                <div class="loader mb-4"></div>
+                <p class="font-medium animate-pulse">AI sedang merancang Rencana Pembelajaran Mendalam...</p>
+                <p class="text-xs text-gray-500 mt-2">Ini mungkin memakan waktu hingga 15-30 detik.</p>
+            </div>
+
+            <!-- Actual Document Container (Printable/Copyable) -->
+            <div id="document-preview-container" class="hidden w-full max-w-[850px] shadow-lg py-12 px-10 border border-gray-300 rounded-sm mx-auto">
+                <!-- Content will be injected here by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Toast Notification -->
+    <div id="toast">Notifikasi</div>
+
+    <script>
+        // API Key setup for Gemini (Will be populated by environment)
+        const apiKey = "";
+        
+        // Form & Buttons
+        const form = document.getElementById('rpmForm');
+        const btnCopy = document.getElementById('btnCopy');
+        const btnWord = document.getElementById('btnWord');
+        const statusContainer = document.getElementById('statusContainer');
+        const loaderContainer = document.getElementById('loaderContainer');
+        const documentContainer = document.getElementById('document-preview-container');
+
+        // Helper to show toast
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = "show";
+            setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+        }
+
+        // Get checked values from specific parent div
+        function getCheckedValues(containerId) {
+            const container = document.getElementById(containerId);
+            const checkboxes = container.querySelectorAll('input[type="checkbox"]:checked');
+            return Array.from(checkboxes).map(cb => cb.value).join(', ');
+        }
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect Data
+            const formData = {
+                namaGuru: document.getElementById('namaGuru').value,
+                nipGuru: document.getElementById('nipGuru').value || '-',
+                namaKepsek: document.getElementById('namaKepsek').value,
+                nipKepsek: document.getElementById('nipKepsek').value || '-',
+                namaSekolah: document.getElementById('namaSekolah').value,
+                mataPelajaran: document.getElementById('mataPelajaran').value,
+                fase: document.getElementById('fase').value,
+                kelas: document.getElementById('kelas').value,
+                semester: document.getElementById('semester').value,
+                tahunPelajaran: document.getElementById('tahunPelajaran').value,
+                alokasiWaktu: document.getElementById('alokasiWaktu').value,
+                cp: document.getElementById('cp').value,
+                tp: document.getElementById('tp').value,
+                targetPeserta: document.getElementById('targetPeserta').value,
+                modelPembelajaran: document.getElementById('modelPembelajaran').value,
+                dimensiProfil: getCheckedValues('dimensiProfil') || 'Beriman, Bernalar Kritis, Kreatif',
+                sarpras: getCheckedValues('sarpras') || 'Alat Tulis, Papan Tulis',
+                metodePembelajaran: getCheckedValues('metodePembelajaran') || 'Diskusi, Ceramah'
+            };
+
+            // UI Changes: Show Loader
+            statusContainer.classList.add('hidden');
+            documentContainer.classList.add('hidden');
+            loaderContainer.classList.remove('hidden');
+            btnCopy.disabled = true;
+            btnWord.disabled = true;
+
+            try {
+                const rpmData = await generateRPMDataWithAI(formData);
+                renderDocument(formData, rpmData);
+                
+                loaderContainer.classList.add('hidden');
+                documentContainer.classList.remove('hidden');
+                btnCopy.disabled = false;
+                btnWord.disabled = false;
+                showToast("Dokumen RPM berhasil dibuat!");
+            } catch (error) {
+                console.error("Error generating RPM:", error);
+                loaderContainer.classList.add('hidden');
+                statusContainer.classList.remove('hidden');
+                statusContainer.innerHTML = `<div class="text-red-500 text-center"><svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg><p>Gagal menghasilkan dokumen AI.</p><p class="text-xs mt-1">Sistem sedang sibuk atau periksa koneksi. Silakan coba lagi.</p></div>`;
+            }
+        });
+
+        // Gemini API Caller with Exponential Backoff
+        async function generateRPMDataWithAI(data) {
+            const systemInstruction = `
+            Anda adalah seorang ahli pengembang kurikulum, instructional designer profesional, dan ahli Kurikulum Merdeka 2025.
+            Buatkan data detail Rencana Pembelajaran Mendalam (RPM) berdasarkan input guru.
+            
+            Prinsip utama:
+            1. Gunakan bahasa Indonesia baku, naratif, profesional, dan siap cetak.
+            2. Terapkan prinsip "Deep Learning" (Bermakna, Aktif, Menyenangkan).
+            3. Pastikan kegiatan pendahuluan memuat salam, doa, presensi, KSE (Sosial Emosional), ice breaking, tujuan, dan pertanyaan pemantik HOTS.
+            4. Hasilkan konten riil, jangan hanya template kosong. Buat materi relevan dengan Mata Pelajaran: ${data.mataPelajaran} dan Tujuan: ${data.tp}.
+            5. Output HARUS dalam format JSON murni sesuai skema yang diberikan, TANPA markdown \`\`\`json.
+            6. Untuk isian panjang, gunakan tag HTML dasar seperti <p>, <ul>, <li>, <strong>, <br> untuk formatting agar rapi (jangan gunakan tag tabel, hanya tag teks).
+            `;
+
+            const promptText = `
+            Buat konten RPM untuk:
+            Mapel: ${data.mataPelajaran}
+            Fase/Kelas: ${data.fase} / ${data.kelas}
+            Alokasi Waktu: ${data.alokasiWaktu}
+            Capaian Pembelajaran: ${data.cp}
+            Tujuan Pembelajaran: ${data.tp}
+            Model: ${data.modelPembelajaran}
+            Metode: ${data.metodePembelajaran}
+            Dimensi P3: ${data.dimensiProfil}
+            Sarpras: ${data.sarpras}
+            Target Peserta: ${data.targetPeserta}
+            `;
+
+            // Define Expected JSON Schema
+            const schema = {
+                type: "OBJECT",
+                properties: {
+                    identifikasi: {
+                        type: "OBJECT",
+                        properties: {
+                            pesertaDidik: { type: "STRING", description: "Analisis pengetahuan awal, minat, gaya belajar" },
+                            materiFaktual: { type: "STRING" },
+                            materiKonseptual: { type: "STRING" },
+                            materiProsedural: { type: "STRING" },
+                            materiMetakognitif: { type: "STRING" },
+                            deskripsiProfil: { type: "STRING", description: "Deskripsi penerapan dimensi profil pancasila" }
+                        }
+                    },
+                    desain: {
+                        type: "OBJECT",
+                        properties: {
+                            lintasDisiplin: { type: "STRING" },
+                            topik: { type: "STRING" },
+                            praktikPedagogis: { type: "STRING" },
+                            kemitraan: { type: "STRING" },
+                            lingkungan: { type: "STRING" },
+                            pemanfaatanDigital: { type: "STRING" }
+                        }
+                    },
+                    petaPengalaman: {
+                        type: "OBJECT",
+                        properties: {
+                            mengalami: { type: "STRING" },
+                            bertanya: { type: "STRING" },
+                            mengeksplorasi: { type: "STRING" },
+                            merefleksi: { type: "STRING" },
+                            mengaplikasikan: { type: "STRING" }
+                        }
+                    },
+                    langkahPendahuluan: { type: "STRING" },
+                    langkahIntiMemahami: { type: "STRING" },
+                    langkahIntiMengaplikasi: { type: "STRING" },
+                    langkahIntiMerefleksi: { type: "STRING" },
+                    langkahPenutup: { type: "STRING" },
+                    asesmen: {
+                        type: "OBJECT",
+                        properties: {
+                            awal: { type: "STRING", description: "3 soal diagnostik singkat" },
+                            formatif: { type: "STRING" },
+                            sumatifIndikator: { type: "STRING" },
+                            sumatifSoalPG: { type: "STRING", description: "10 soal PG + jawaban" },
+                            sumatifSoalEsai: { type: "STRING", description: "5 soal Esai + rubrik ringkas" },
+                            remedialPengayaan: { type: "STRING" }
+                        }
+                    },
+                    diferensiasi: {
+                        type: "OBJECT",
+                        properties: {
+                            konten: { type: "STRING" },
+                            proses: { type: "STRING" },
+                            produk: { type: "STRING" }
+                        }
+                    },
+                    lampiran: {
+                        type: "OBJECT",
+                        properties: {
+                            rubrik: { type: "STRING" },
+                            materiRingkas: { type: "STRING" },
+                            lkpd: { type: "STRING", description: "Judul, Tujuan, Petunjuk, Soal" },
+                            soalHOTS: { type: "STRING", description: "5 soal HOTS tambahan" },
+                            pustaka: { type: "STRING" }
+                        }
+                    }
+                }
+            };
+
+            const payload = {
+                contents: [{ parts: [{ text: promptText }] }],
+                systemInstruction: { parts: [{ text: systemInstruction }] },
+                generationConfig: { 
+                    responseMimeType: "application/json",
+                    responseSchema: schema
+                }
+            };
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            const delays = [1000, 2000, 4000, 8000, 16000];
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    
+                    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                    
+                    const result = await response.json();
+                    const textContent = result.candidates?.[0]?.content?.parts?.[0]?.text;
+                    if (!textContent) throw new Error("Format respon tidak valid");
+                    
+                    return JSON.parse(textContent);
+                } catch (error) {
+                    if (i === 4) throw error;
+                    await new Promise(res => setTimeout(res, delays[i]));
+                }
+            }
+        }
+
+        // Render HTML Document mapping JSON to Table format
+        function renderDocument(input, ai) {
+            const html = `
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <h2 style="font-size: 14pt; font-weight: bold; margin: 0;">RENCANA PEMBELAJARAN MENDALAM (RPM)</h2>
+                    <h3 style="font-size: 12pt; font-weight: bold; margin: 5px 0 0 0;">KURIKULUM MERDEKA</h3>
+                </div>
+
+                <!-- A. INFORMASI UMUM -->
+                <table class="rpm-table">
+                    <tr><th colspan="4">A. INFORMASI UMUM</th></tr>
+                    <tr>
+                        <td style="width: 20%;"><strong>Nama Sekolah</strong></td><td style="width: 30%;">${input.namaSekolah}</td>
+                        <td style="width: 20%;"><strong>Kelas / Semester</strong></td><td style="width: 30%;">${input.kelas} / ${input.semester}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Mata Pelajaran</strong></td><td>${input.mataPelajaran}</td>
+                        <td><strong>Durasi / Alokasi Waktu</strong></td><td>${input.alokasiWaktu}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nama Guru</strong></td><td>${input.namaGuru}</td>
+                        <td><strong>Tahun Pelajaran</strong></td><td>${input.tahunPelajaran}</td>
+                    </tr>
+                </table>
+
+                <!-- B. IDENTIFIKASI -->
+                <table class="rpm-table">
+                    <tr><th colspan="2">B. IDENTIFIKASI</th></tr>
+                    <tr>
+                        <td style="width: 25%;"><strong>1. Peserta Didik</strong></td>
+                        <td>${ai.identifikasi.pesertaDidik}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>2. Materi Pelajaran</strong></td>
+                        <td>
+                            <ul>
+                                <li><strong>Faktual:</strong> ${ai.identifikasi.materiFaktual}</li>
+                                <li><strong>Konseptual:</strong> ${ai.identifikasi.materiKonseptual}</li>
+                                <li><strong>Prosedural:</strong> ${ai.identifikasi.materiProsedural}</li>
+                                <li><strong>Metakognitif:</strong> ${ai.identifikasi.materiMetakognitif}</li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>3. Dimensi Profil Pelajar Pancasila</strong></td>
+                        <td>
+                            <p><strong>Dimensi:</strong> ${input.dimensiProfil}</p>
+                            <p>${ai.identifikasi.deskripsiProfil}</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- C. DESAIN PEMBELAJARAN -->
+                <table class="rpm-table">
+                    <tr><th colspan="2">C. DESAIN PEMBELAJARAN</th></tr>
+                    <tr>
+                        <td style="width: 25%;"><strong>Capaian Pembelajaran</strong></td>
+                        <td>${input.cp}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tujuan Pembelajaran</strong></td>
+                        <td>${input.tp}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lintas Disiplin Ilmu</strong></td>
+                        <td>${ai.desain.lintasDisiplin}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Topik Pembelajaran</strong></td>
+                        <td>${ai.desain.topik}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Praktik Pedagogis</strong></td>
+                        <td><p><strong>Model:</strong> ${input.modelPembelajaran}</p><p><strong>Metode:</strong> ${input.metodePembelajaran}</p><p>${ai.desain.praktikPedagogis}</p></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kemitraan Pembelajaran</strong></td>
+                        <td>${ai.desain.kemitraan}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lingkungan Belajar & Pemanfaatan Digital</strong></td>
+                        <td>
+                            <p><strong>Lingkungan:</strong> ${ai.desain.lingkungan}</p>
+                            <p><strong>Sarana Prasarana:</strong> ${input.sarpras}</p>
+                            <p><strong>Digital:</strong> ${ai.desain.pemanfaatanDigital}</p>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- D. PETA PENGALAMAN BELAJAR MURID -->
+                <table class="rpm-table">
+                    <tr><th colspan="2">D. PETA PENGALAMAN BELAJAR MURID</th></tr>
+                    <tr><td style="width: 25%;"><strong>Mengalami</strong></td><td>${ai.petaPengalaman.mengalami}</td></tr>
+                    <tr><td><strong>Bertanya</strong></td><td>${ai.petaPengalaman.bertanya}</td></tr>
+                    <tr><td><strong>Mengeksplorasi</strong></td><td>${ai.petaPengalaman.mengeksplorasi}</td></tr>
+                    <tr><td><strong>Merefleksi</strong></td><td>${ai.petaPengalaman.merefleksi}</td></tr>
+                    <tr><td><strong>Mengaplikasikan</strong></td><td>${ai.petaPengalaman.mengaplikasikan}</td></tr>
+                </table>
+
+                <!-- E. LANGKAH PEMBELAJARAN -->
+                <table class="rpm-table">
+                    <tr><th>E. LANGKAH PEMBELAJARAN</th></tr>
+                    <tr>
+                        <td>
+                            <strong>1. Kegiatan Pendahuluan</strong>
+                            <div style="margin-top: 8px;">${ai.langkahPendahuluan}</div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>2. Kegiatan Inti</strong>
+                            <div style="margin-top: 8px; margin-bottom: 12px;">
+                                <em><strong>Tahap Memahami:</strong></em><br/>
+                                ${ai.langkahIntiMemahami}
+                            </div>
+                            <div style="margin-bottom: 12px;">
+                                <em><strong>Tahap Mengaplikasi:</strong></em><br/>
+                                ${ai.langkahIntiMengaplikasi}
+                            </div>
+                            <div>
+                                <em><strong>Tahap Merefleksi:</strong></em><br/>
+                                ${ai.langkahIntiMerefleksi}
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>3. Kegiatan Penutup</strong>
+                            <div style="margin-top: 8px;">${ai.langkahPenutup}</div>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- F. ASESMEN PEMBELAJARAN -->
+                <table class="rpm-table">
+                    <tr><th colspan="2">F. ASESMEN PEMBELAJARAN</th></tr>
+                    <tr>
+                        <td style="width: 25%;"><strong>Asesmen Awal (Diagnostik)</strong></td>
+                        <td>${ai.asesmen.awal}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Asesmen Formatif</strong></td>
+                        <td>${ai.asesmen.formatif}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Asesmen Sumatif</strong></td>
+                        <td>
+                            <p><strong>Indikator:</strong> ${ai.asesmen.sumatifIndikator}</p>
+                            <br>
+                            <p><strong>Instrumen: 10 Soal Pilihan Ganda</strong></p>
+                            ${ai.asesmen.sumatifSoalPG}
+                            <br>
+                            <p><strong>Instrumen: 5 Soal Esai</strong></p>
+                            ${ai.asesmen.sumatifSoalEsai}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Remedial & Pengayaan</strong></td>
+                        <td>${ai.asesmen.remedialPengayaan}</td>
+                    </tr>
+                </table>
+
+                <!-- G. DIFERENSIASI PEMBELAJARAN -->
+                <table class="rpm-table">
+                    <tr><th colspan="2">G. DIFERENSIASI PEMBELAJARAN</th></tr>
+                    <tr><td style="width: 25%;"><strong>Diferensiasi Konten</strong></td><td>${ai.diferensiasi.konten}</td></tr>
+                    <tr><td><strong>Diferensiasi Proses</strong></td><td>${ai.diferensiasi.proses}</td></tr>
+                    <tr><td><strong>Diferensiasi Produk</strong></td><td>${ai.diferensiasi.produk}</td></tr>
+                </table>
+
+                <!-- H. LAMPIRAN -->
+                <table class="rpm-table">
+                    <tr><th>H. LAMPIRAN</th></tr>
+                    <tr><td><strong>1. Rubrik Penilaian</strong><br><br>${ai.lampiran.rubrik}</td></tr>
+                    <tr><td><strong>2. Materi Ringkas</strong><br><br>${ai.lampiran.materiRingkas}</td></tr>
+                    <tr><td><strong>3. Lembar Kerja Peserta Didik (LKPD)</strong><br><br>${ai.lampiran.lkpd}</td></tr>
+                    <tr><td><strong>4. Soal HOTS Tambahan (5 Butir)</strong><br><br>${ai.lampiran.soalHOTS}</td></tr>
+                    <tr><td><strong>5. Daftar Pustaka</strong><br><br>${ai.lampiran.pustaka}</td></tr>
+                </table>
+
+                <!-- FOOTER / TTD -->
+                <br><br>
+                <table style="width: 100%; border: none; font-size: 11pt; text-align: center;">
+                    <tr>
+                        <td style="width: 50%; border: none; padding-bottom: 80px;">Mengetahui,<br>Kepala ${input.namaSekolah}</td>
+                        <td style="width: 50%; border: none; padding-bottom: 80px;">............, .......................... 202...<br>Guru Mata Pelajaran</td>
+                    </tr>
+                    <tr>
+                        <td style="border: none;"><strong><u>${input.namaKepsek}</u></strong><br>NIP. ${input.nipKepsek}</td>
+                        <td style="border: none;"><strong><u>${input.namaGuru}</u></strong><br>NIP. ${input.nipGuru}</td>
+                    </tr>
+                </table>
+            `;
+
+            documentContainer.innerHTML = html;
+        }
+
+        // Copy to Google Docs format
+        function copyToGoogleDocs() {
+            const el = document.getElementById('document-preview-container');
+            const selection = window.getSelection();
+            const range = document.createRange();
+            
+            // Unhide temporarily if hidden to copy
+            const wasHidden = el.classList.contains('hidden');
+            if(wasHidden) el.classList.remove('hidden');
+
+            range.selectNodeContents(el);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            
+            try {
+                document.execCommand('copy');
+                selection.removeAllRanges();
+                showToast('Tersalin ke Clipboard! Membuka Google Docs...');
+                setTimeout(() => { window.open('https://docs.new', '_blank'); }, 1000);
+            } catch (err) {
+                console.error("Gagal menyalin text:", err);
+                showToast('Gagal menyalin, periksa izin browser.');
+            }
+
+            if(wasHidden) el.classList.add('hidden');
+        }
+
+        // Export to Word
+        function exportToWord() {
+            const content = document.getElementById('document-preview-container').innerHTML;
+            const header = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title><style>table{border-collapse:collapse;width:100%}th,td{border:1px solid black;padding:8px;vertical-align:top;text-align:justify}th{background-color:#f3f4f6;text-align:left}</style></head><body>";
+            const footer = "</body></html>";
+            const sourceHTML = header + content + footer;
+            
+            const blob = new Blob(['\ufeff', sourceHTML], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `RPM_${document.getElementById('mataPelajaran').value}_${document.getElementById('kelas').value}.doc`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+            showToast('Dokumen Word berhasil diunduh!');
+        }
+    </script>
+</body>
+</html>
